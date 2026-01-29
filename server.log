@@ -1,0 +1,6 @@
+2025/10/20 21:40:04 App running in development mode
+2025/10/20 21:40:04 Server started on :8080
+Registering authenticated connection for user: 2 (role: guest)
+2025/10/20 21:40:43 read error: websocket: close 1001 (going away)
+Registering authenticated connection for user: 2 (role: guest)
+signal: killed

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package message.v1;
+
+option go_package = "messaging-service/gen/messagepb;messagepb";
+
+service MessageService {
+  rpc Health (HealthRequest) returns (HealthResponse);
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+}

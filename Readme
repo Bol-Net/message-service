@@ -1,0 +1,61 @@
+# Go Messaging Service
+
+## Overview
+A real-time messaging service built in Go with WebSocket & REST API support.
+
+## Architecture
+- WebSocket layer for real-time communication
+- PostgreSQL for message persistence
+- REST API for sending/fetching messages
+- Redis (future) for presence tracking and scaling
+
+
+messaging-service/
+├── cmd/server/main.go          # entry point for the service
+├── internal/
+│   ├── api/handlers.go         # REST API handlers
+│   ├── api/routes.go           # REST API routes
+│   ├── config/config.go        # load env variables, DB/Redis config
+│   ├── db/postgres.go          # Postgres connection
+│   ├── redis/redis.go          # Redis connection
+│   ├── model/message.go        # Message struct definition
+│   ├── websocket/              # WebSocket logic
+│   │   ├── hub.go              # Hub: manages all connections
+│   │   └── connection.go       # Connection: single WebSocket client
+│   └── service/messaging.go    # batching, fanout, message handling
+
+REST API Endpoints
+- GET /api/messages?user_id=<user_id>&with=<user_id> - Get message history between users
+- GET /api/online_users - Get list of currently online users
+- POST /api/send_message - Send new message to user
+
+WebSocket Endpoints
+- GET /ws?user_id=<user_id> - Upgrade to WebSocket connection
+
+
+Running the Service
+```
+export POSTGRES_DSN="postgres://user:pass@localhost:5432/chat_app?sslmode=disable"
+export REDIS_ADDR="localhost:6379"
+go run cmd/server/main.go
+```
+
+Testing WebSocket
+```
+websocat "ws://localhost:8080/ws?user_id=a"
+websocat "ws://localhost:8080/ws?user_id=b"
+```
+
+Testing REST API
+```
+curl -X POST -H "Content-Type: application/json" -d '{"receiver_id": "2", "content": "Hello"}' http://localhost:8080/api/send_message
+```
+
+Future Enhancements
+- Message acknowledgement for offline users
+- Presence tracking in Redis
+- Redis Pub/Sub for scaling across multiple instances
+- Authentication & user management
+- Frontend integration (React / Vue.js)
+- Optional push notifications
+- Improved error handling and retries

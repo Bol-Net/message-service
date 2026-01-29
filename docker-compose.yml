@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  # 🧠 Go Chat Backend
+  chat-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chat-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DATABASE_URL=postgres://chatuser:secret@db:5432/chatdb?sslmode=disable
+      - REDIS_URL=redis:6379
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  # 🗄️ PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: chat-db
+    restart: always
+    environment:
+      POSTGRES_USER: chatuser
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: chatdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # ⚡ Redis
+  redis:
+    image: redis:7-alpine
+    container_name: chat-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # 🧭 pgAdmin (Optional)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: chat-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@chat.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+  redis_data:
