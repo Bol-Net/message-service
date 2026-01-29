@@ -1,26 +1,36 @@
 # Stage 1: Build
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# Copy go.mod and go.sum from root
+# Install git (needed for go mod sometimes)
+RUN apk add --no-cache git
+
+# Copy go.mod and go.sum
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy entire project
+# Copy full source
 COPY . .
 
-# Build the Go binary from cmd/server/main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
+# Build HTTP server
+RUN CGO_ENABLED=0 GOOS=linux go build -o http-server ./cmd/server
 
-# Stage 2: Minimal runtime
+# Build gRPC server
+RUN CGO_ENABLED=0 GOOS=linux go build -o grpc-server ./cmd/grpc
+
+# Stage 2: Runtime
 FROM alpine:3.18
 
 WORKDIR /app
 
-# Copy built binary
-COPY --from=builder /app/main .
+# Copy both binaries
+COPY --from=builder /app/http-server .
+COPY --from=builder /app/grpc-server .
 
+# Expose ports (documentation only)
 EXPOSE 8080
+EXPOSE 50051
 
-CMD ["./main"]
+# Default command (can be overridden by docker-compose)
+CMD ["./http-server"]
